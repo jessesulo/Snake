@@ -1,0 +1,266 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Untitled Document</title>
+</head>
+<style type="text/css">
+	img { position: absolute; height: 20px; width: 20px; border: solid 0px black; }
+	body {background-color: black}
+	#background
+	{
+		background-color: white;
+		position: absolute;
+		width: 800px;
+		height: 800px;
+		margin: 0px;
+		left: 100px;
+		top: 100px;
+	}
+</style>
+<body onkeydown="changeDir(event)">
+	<div id="background"></div>
+	<img src="snakeHeadDown.png" id="head" />
+	<img src="snakeFood.png" id="food" />
+	
+</body>
+<script>
+	// Variables
+	var headTop = 200, headLeft = 200; // snake head position
+	var foodTop = 300, foodLeft = 300; // food position
+	var headDir = 0, headSpeed = 20; // direction and speed
+	var z = 0; // tail segment to be moved next
+	var zz = 0 // tail segment just in front
+	var tailLength = 5; // how many tail segments to show
+	var died = false; // new snake life variable
+	var tail = [];
+	var tailUpdateIndex = 0;
+	
+	var head = document.getElementById("head");
+	var food = document.getElementById("food");
+	
+	head.style.top = headTop + "px";
+	head.style.left = headLeft + "px";
+	food.style.top = foodTop + "px";
+	food.style.left = foodLeft + "px";
+	//document.getElementById("tail").style.visibility = "hidden";
+	
+	window.focus();
+	
+	setUpTail();
+	
+	//var f = setInterval(showFood, 5000);
+	var t = setInterval(function () {
+		switch(headDir) {
+			case 1: headTop -= headSpeed; updateTail(tail, 1); break; // move up
+			case 2: headLeft += headSpeed; updateTail(tail, 2); break; // move right
+			case 3: headTop += headSpeed; updateTail(tail, 3); break; // move down
+			case 4: headLeft -= headSpeed; updateTail(tail, 4); break; // move left
+		}
+		
+		head.style.top = headTop + "px";
+		head.style.left = headLeft + "px";
+		
+		if(died) {
+			headDir = 0;
+			died = true;
+			clearInterval(t);
+			//clearInterval(f);
+			alert("You Died!");
+			location.reload();
+		}
+		
+		foodCollison();
+		wallCollison();
+		for(let i =  0; i < tailLength; i++)
+			{
+				collison(headLeft, headTop, head.width, head.height, tail[i].left, tail[i].top, tail[i].obj.width, tail[i].obj.height);	
+			}
+	}, 100)	
+	
+	function changeDir(e) {
+		switch(e.keyCode) {
+			case 38: headDir = 1; break; // up
+			case 39: headDir = 2; break; // right
+			case 40: headDir = 3; break; // down
+			case 37: headDir = 4; break; // left
+			case 96: headDir = 0; break; // stop
+		}
+	}
+	
+	function wallCollison() {
+		if(headTop < 80)
+			died = true;
+		if(headLeft + 20 > 900)
+			died = true;
+		if(headLeft < 80)
+			died = true;
+		if(headTop + 20 > 900)
+			died = true;
+	}
+	
+	function foodCollison()
+	{
+		let xH = headLeft;
+		let yH = headTop;
+		let wH = head.width;
+		let hH = head.height;
+		
+		let xF = foodLeft;
+		let yF = foodTop;
+		let wF = food.width;
+		let hF = food.height;
+		
+		if(xH >= xF && yH >= yF && xH + 20 <= xF + 20 && yH + 20 <= yF + 20)
+			{
+				if(wH >= wF && hH >= hF)
+					{
+						console.log("collide");
+						showFood();
+						tailLength++;
+						addTail(1);
+					}
+			}
+	}
+	
+	function collison(x1, y1, w1, h1, x2, y2, w2, h2)
+	{	
+		if(x1 >= x2 && y1 >= y2 && x1 + 20 <= x2 + 20 && y1 + 20 <= y2 + 20)
+			{
+				if(w1 >= w2 && h1 >= h1)
+					{
+						console.log("Dead");
+						died = true;
+					}
+			}
+	}
+	
+	function addTail(amount)
+	{
+		for(let i = 0; i < amount; i++)
+			{
+				let a = document.createElement("img");
+				document.body.appendChild(a);
+				a.width = 20;
+				a.height = 20;
+				a.src = "snakeTail.png";
+				a.style.left = -20 + "px";
+				a.style.top = -20 + "px";
+				let b = {
+					obj: a,
+					left: -20,
+					top: -20
+				}
+				tail.unshift(b);
+			}
+
+	}
+	
+	function updateTail(t, dir)
+	{
+		let i = (tail.length-1) - tailUpdateIndex;
+		if(dir == 1)//up
+			{
+				if(tailUpdateIndex >= tailLength-1)
+					{
+						tailUpdateIndex = 0;
+					}
+				else
+					{
+						tailUpdateIndex++;
+					}
+				
+				t[i].obj.style.left = headLeft + "px";
+				t[i].obj.style.top = headTop + 20 + "px";
+				t[i].left = headLeft;
+				t[i].top = headTop+20;
+			}
+		else if(dir == 2)//right
+			{
+				if(tailUpdateIndex >= tailLength-1)
+					{
+						tailUpdateIndex = 0;
+					}
+				else
+					{
+						tailUpdateIndex++;
+					}
+				
+				t[i].obj.style.left = headLeft - 20 + "px";
+				t[i].obj.style.top = headTop + "px";
+				t[i].left = headLeft-20;
+				t[i].top = headTop;
+			}
+		else if(dir == 3)//down
+			{
+				if(tailUpdateIndex >= tailLength-1)
+					{
+						tailUpdateIndex = 0;
+					}
+				else
+					{
+						tailUpdateIndex++;
+					}
+				
+				t[i].obj.style.left = headLeft + "px";
+				t[i].obj.style.top = headTop - 20 + "px";
+				t[i].left = headLeft;
+				t[i].top = headTop-20;
+			}
+		else if(dir == 4)//left
+		{
+			{
+				if(tailUpdateIndex >= tailLength-1)
+					{
+						tailUpdateIndex = 0;
+					}
+				else
+					{
+						tailUpdateIndex++;
+					}
+				
+				t[i].obj.style.left = headLeft + 20 + "px";
+				t[i].obj.style.top = headTop + "px";
+				t[i].left = headLeft+20;
+				t[i].top = headTop;
+			}
+		}
+	}
+	
+	function showFood() {
+	   foodTop = Math.floor(Math.random() * 800 / 20) * 20 + 100;
+	   foodLeft = Math.floor(Math.random() * 800 / 20) * 20 + 100;
+	   food.style.top = foodTop + "px";
+	   food.style.left = foodLeft + "px";
+	}
+	
+	function testWalls() {
+	   if(headTop < 0) { return true; }
+	   if(headLeft + 20 > window.innerWidth) { return true; } 
+	   if(headLeft < 0) { return true; }
+	   if(headTop + 20 > window.innerHeight) { return true; } 
+	   return false;	
+	}	
+	
+	function setUpTail()
+	{
+		for(let i = 1; i <= tailLength; i++)
+			{
+				let a = document.createElement("img");
+				document.body.appendChild(a);
+				a.width = 20;
+				a.height = 20;
+				a.src = "snakeTail.png";
+				let wa = i * 20;
+				a.style.top = headTop + -wa + "px";
+				a.style.left = headLeft  + "px";
+				let b = {
+					obj: a,
+					left: headLeft,
+					top: headTop + -wa
+				}
+				tail.push(b);
+			}
+	}
+</script>
+</html>
